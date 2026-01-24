@@ -11,9 +11,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+
+
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.springframework.http.HttpHeaders;
+import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @RestController
@@ -33,6 +38,36 @@ public class ReceiptController {
             return ResponseEntity.ok(receiptRepository.findAll());
         } catch (Exception e) {
             log.error("목록 조회 실패: ", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // 🌟 추가: CSV 다운로드 API
+    @GetMapping("/export")
+    public ResponseEntity<byte[]> exportToCsv() {
+        try {
+            List<Receipt> receipts = receiptRepository.findAll();
+
+            // CSV 내용 생성
+            StringBuilder csv = new StringBuilder();
+            csv.append('\ufeff'); // 엑셀에서 한글 깨짐 방지를 위한 BOM 추가
+            csv.append("번호,상호명,날짜,금액\n");
+
+            for (Receipt r : receipts) {
+                csv.append(r.getId()).append(",")
+                        .append(r.getStoreName()).append(",")
+                        .append(r.getTradeDate()).append(",")
+                        .append(r.getTotalAmount()).append("\n");
+            }
+
+            byte[] out = csv.toString().getBytes(StandardCharsets.UTF_8);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_TYPE, "text/csv; charset=UTF-8")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=receipt_list.csv")
+                    .body(out);
+        } catch (Exception e) {
+            log.error("CSV 생성 실패: ", e);
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -91,4 +126,5 @@ public class ReceiptController {
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
     }
+
 }

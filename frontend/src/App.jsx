@@ -1,84 +1,21 @@
+// App.jsx 최상단
+const API_BASE_URL = `http://${window.location.hostname}:8080/api/receipts`;
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-// 별도의 CSS 파일 없이 이 파일 안에서 모든 스타일을 처리합니다.
+
 const styles = {
-    container: {
-        minHeight: '100vh',
-        backgroundColor: '#f4f7f9',
-        fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-        color: '#333',
-        padding: '20px'
-    },
-    nav: {
-        backgroundColor: '#fff',
-        padding: '15px 40px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
-        borderRadius: '12px',
-        marginBottom: '30px'
-    },
-    logo: {
-        fontSize: '22px',
-        fontWeight: 'bold',
-        color: '#1a73e8',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px'
-    },
-    dashboard: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '20px',
-        marginBottom: '30px'
-    },
-    card: {
-        backgroundColor: '#fff',
-        padding: '20px',
-        borderRadius: '16px',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.02)',
-        border: '1px solid #eef2f6'
-    },
-    uploadBox: {
-        backgroundColor: '#fff',
-        padding: '40px',
-        borderRadius: '20px',
-        textAlign: 'center',
-        border: '2px dashed #cbd5e0',
-        marginBottom: '40px',
-        cursor: 'pointer'
-    },
-    button: {
-        backgroundColor: '#1a73e8',
-        color: '#fff',
-        border: 'none',
-        padding: '12px 24px',
-        borderRadius: '8px',
-        fontSize: '16px',
-        fontWeight: '600',
-        cursor: 'pointer',
-        width: '100%',
-        marginTop: '15px',
-        transition: 'background 0.3s'
-    },
-    receiptItem: {
-        backgroundColor: '#fff',
-        padding: '20px',
-        borderRadius: '12px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '12px',
-        borderLeft: '5px solid #1a73e8',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.03)'
-    },
-    amount: {
-        fontSize: '18px',
-        fontWeight: '800',
-        color: '#1a73e8'
-    }
+    container: { minHeight: '100vh', backgroundColor: '#f4f7f9', fontFamily: "'Segoe UI', sans-serif", color: '#333', padding: '20px' },
+    nav: { backgroundColor: '#fff', padding: '15px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', borderRadius: '12px', marginBottom: '30px' },
+    logo: { fontSize: '22px', fontWeight: 'bold', color: '#1a73e8', display: 'flex', alignItems: 'center', gap: '8px' },
+    dashboard: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '30px' },
+    card: { backgroundColor: '#fff', padding: '20px', borderRadius: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', border: '1px solid #eef2f6' },
+    uploadBox: { backgroundColor: '#fff', padding: '40px', borderRadius: '20px', textAlign: 'center', border: '2px dashed #cbd5e0', marginBottom: '40px', cursor: 'pointer' },
+    button: { backgroundColor: '#1a73e8', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '8px', fontSize: '16px', fontWeight: '600', cursor: 'pointer', width: '100%', marginTop: '15px', transition: 'background 0.3s' },
+    downloadBtn: { backgroundColor: '#34a853', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '8px', fontSize: '14px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' },
+    receiptItem: { backgroundColor: '#fff', padding: '20px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', borderLeft: '5px solid #1a73e8', boxShadow: '0 2px 4px rgba(0,0,0,0.03)' },
+    amount: { fontSize: '18px', fontWeight: '800', color: '#1a73e8' }
 };
 
 function App() {
@@ -89,7 +26,7 @@ function App() {
 
     const fetchReceipts = async () => {
         try {
-            const res = await axios.get('http://192.168.0.61:8080/api/receipts');
+            const res = await axios.get(API_BASE_URL);
             setReceipts(res.data.reverse());
         } catch (err) {
             console.error("Fetch error", err);
@@ -113,7 +50,7 @@ function App() {
         formData.append('file', file);
 
         try {
-            await axios.post('http://192.168.0.61:8080/api/receipts/upload', formData);
+            await axios.post(`${API_BASE_URL}/upload`, formData);
             setFile(null);
             setPreview(null);
             fetchReceipts();
@@ -123,6 +60,11 @@ function App() {
         } finally {
             setLoading(false);
         }
+    };
+
+    // 📊 CSV 다운로드 핸들러
+    const handleDownload = () => {
+        window.location.href = `${API_BASE_URL}/export`;
     };
 
     const totalAmount = receipts.reduce((sum, r) => sum + r.totalAmount, 0);
@@ -163,7 +105,13 @@ function App() {
                     )}
                 </div>
 
-                <h3 style={{marginBottom: '20px', color: '#555'}}>최근 분석 내역</h3>
+                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
+                    <h3 style={{color: '#555', margin: 0}}>최근 분석 내역</h3>
+                    <button onClick={handleDownload} style={styles.downloadBtn}>
+                        📊 CSV 다운로드
+                    </button>
+                </div>
+
                 {receipts.map(r => (
                     <div key={r.id} style={styles.receiptItem}>
                         <div>
