@@ -35,3 +35,8 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Custom Secrets ###
+# 중요: 보안을 위해 시크릿 파일을 무시 목록에 추가합니다.
+application-secret.properties
+**/src/main/resources/application-secret.properties

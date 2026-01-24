@@ -140,3 +140,68 @@ spring.datasource.password=YOUR_DB_PASSWORD
 **Issue: 보안 사고 예방(Git History)**
 - Problem: 초기 커밋 기록에 API 키가 포함되어 보안 위협 발생.
 - Solution: git reset을 통한 기록 초기화와 spring.profiles.include를 이용한 프로필 분리 기법 적용
+
+### 8.3 모바일 디바이스 연동 및 네트워크 트러블슈팅 (Mobile & Network)
+
+**Issue: 모바일 기기 접속 시 Network Error 및 데이터 통신 실패**
+
+**현상:** 맥북에서 실행 중인 웹페이지에 핸드폰으로 접속(IP 주소 이용)은 가능하나, 사진 업로드나 분석 내역 조회 시 Network Error 발생.
+
+**원인 분석:**
+
+1. **Vite Host 미개방**: 프론트엔드 서버(Vite)가 기본적으로 로컬호스트(localhost) 접속만 허용하고 있어 외부 기기(모바일)의 접근을 차단함.
+
+2. **API Endpoint 오류**: 프론트엔드 코드 내 API 호출 주소가 localhost:8080으로 고정되어 있어, 모바일 기기가 자기 자신(핸드폰)의 8080 포트를 호출함.
+
+3. **CORS(Cross-Origin Resource Sharing) 정책**: 백엔드 서버가 허용한 출처(Origin)에 모바일 기기의 IP가 포함되지 않아 보안상 요청을 거부함.
+
+**해결 방법:**
+
+1. **Vite 서버 개방**: package.json의 실행 스크립트에 --host 옵션을 추가하여 로컬 네트워크 내 모든 기기의 접속을 허용함. (vite --host)
+
+2. **API Base URL 동적 설정**: 프론트엔드 내 모든 API 호출 주소를 맥북의 실제 로컬 IP(192.168.x.x)로 변경하여 모바일 기기가 서버 위치를 정확히 인지하도록 함.
+
+3. **CORS 설정 확장**: 백엔드 ReceiptController에 @CrossOrigin(origins = "*") 설정을 적용하여 외부 IP를 가진 모바일 기기와의 통신을 허용함.
+
+## 9. 모바일 테스트 가이드 (How to Test on Mobile)
+
+본 프로젝트를 모바일 환경에서 실시간 테스트하기 위한 설정 가이드입니다.
+
+### 1) 네트워크 환경 확인
+
+맥북과 모바일 기기가 **동일한 와이파이(Wi-Fi)**에 연결되어 있어야 합니다.
+
+맥북 터미널에서 ifconfig 명령어를 통해 할당된 IP 주소(예: 192.168.0.61)를 확인합니다.
+
+### 2) 프론트엔드 설정 (Frontend)
+
+**package.json 수정:**
+```json
+"scripts": {
+  "dev": "vite --host"
+}
+```
+
+**App.jsx 또는 API 관리 파일 수정:**
+```javascript
+// 기존 localhost 주소를 맥북 IP로 변경
+const API_BASE_URL = "http://192.168.0.61:8080/api/receipts";
+```
+
+### 3) 백엔드 설정 (Backend)
+
+**ReceiptController.java 수정:**
+```java
+@CrossOrigin(origins = "*") // 테스트를 위해 모든 접속 허용
+@RestController
+```
+
+### 4) 접속 및 실행
+
+맥북에서 서버 실행 후, 모바일 브라우저 주소창에 http://[맥북IP]:5173을 입력하여 접속합니다.
+
+## 10. 보안 및 환경 설정 유의사항 (Security & Environment)
+
+**보안 파일 관리**: API 키 등 민감한 정보가 담긴 application-secret.properties는 .gitignore에 등록하여 깃허브 노출을 원천 차단함.
+
+**데이터베이스 호환성**: 맥북 환경(MariaDB)에서 대용량 텍스트 처리를 위해 raw_text 컬럼 타입을 LONGTEXT로 설정하여 영수증 데이터 유실을 방지함.
