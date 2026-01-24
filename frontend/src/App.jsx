@@ -89,7 +89,7 @@ function App() {
 
     const fetchReceipts = async () => {
         try {
-            const res = await axios.get('http://localhost:8080/api/receipts');
+            const res = await axios.get('http://192.168.0.61:8080/api/receipts');
             setReceipts(res.data.reverse());
         } catch (err) {
             console.error("Fetch error", err);
@@ -113,7 +113,7 @@ function App() {
         formData.append('file', file);
 
         try {
-            await axios.post('http://localhost:8080/api/receipts/upload', formData);
+            await axios.post('http://192.168.0.61:8080/api/receipts/upload', formData);
             setFile(null);
             setPreview(null);
             fetchReceipts();

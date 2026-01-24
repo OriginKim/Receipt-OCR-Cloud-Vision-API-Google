@@ -19,7 +19,8 @@ import java.util.regex.Pattern;
 @RestController
 @RequestMapping("/api/receipts")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
+//@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*") // 모든 도메인(IP)에서의 접속을 허용합니다.
 public class ReceiptController {
 
     private final ReceiptRepository receiptRepository;
