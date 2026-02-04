@@ -1,16 +1,16 @@
-//package com.example.backend.entity;
+// package com.example.backend.entity;
 //
-//import jakarta.persistence.*;
-//import lombok.*;
-//import java.time.LocalDateTime;
+// import jakarta.persistence.*;
+// import lombok.*;
+// import java.time.LocalDateTime;
 //
-//@Entity
-//@Getter
-//@Setter
-//@NoArgsConstructor
-//@AllArgsConstructor
-//@Builder
-//public class Receipt {
+// @Entity
+// @Getter
+// @Setter
+// @NoArgsConstructor
+// @AllArgsConstructor
+// @Builder
+// public class Receipt {
 //    @Id
 //    @GeneratedValue(strategy = GenerationType.IDENTITY)
 //    private Long id;
@@ -28,12 +28,12 @@
 //    public void prePersist() {
 //        this.createdAt = LocalDateTime.now();
 //    }
-//}
+// }
 package com.example.backend.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
 import java.time.LocalDateTime;
+import lombok.*;
 
 @Entity
 @Getter
@@ -42,23 +42,23 @@ import java.time.LocalDateTime;
 @Builder
 public class Receipt {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    private String storeName;
-    private String tradeDate;
-    private int totalAmount;
+  private String storeName;
+  private String tradeDate;
+  private int totalAmount;
 
-    // 핵심 수정 부분: 매우 긴 JSON 데이터를 저장하기 위해 타입을 지정합니다.
-    @Lob
-    @Column(columnDefinition = "LONGTEXT")
-    private String rawText;
+  // 핵심 수정 부분: 매우 긴 JSON 데이터를 저장하기 위해 타입을 지정합니다.
+  @Lob
+  @Column(columnDefinition = "LONGTEXT")
+  private String rawText;
 
-    private LocalDateTime createdAt;
+  private LocalDateTime createdAt;
 
-    @PrePersist
-    public void prePersist() {
-        this.createdAt = LocalDateTime.now();
-    }
+  @PrePersist
+  public void prePersist() {
+    this.createdAt = LocalDateTime.now();
+  }
 }
